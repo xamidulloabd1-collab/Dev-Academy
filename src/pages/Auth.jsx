@@ -1,30 +1,49 @@
 import React, { useState } from 'react';
 import { Terminal, Lock, Mail, User } from 'lucide-react';
 
+// Vercel'dagi backend manzili
+const API_URL = "https://backend-chi-six-43.vercel.app/api";
+
 export default function Auth({ onLogin, setActiveTab }) {
   const [isRegister, setIsRegister] = useState(true);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password || (isRegister && !name)) {
       alert("Iltimos, barcha maydonlarni to'ldiring!");
       return;
     }
 
-    // Real simulyatsiya qilingan foydalanuvchi obyekti
-    const userData = {
-      name: isRegister ? name : email.split('@')[0],
-      email: email,
-      subscription: false, // Boshlang'ichda bepul tarif
-      progress: 2,
-      points: 150,
-      rank: 14
-    };
+    setLoading(true);
+    try {
+      const endpoint = isRegister ? `${API_URL}/register` : `${API_URL}/login`;
+      const bodyData = isRegister ? { name, email, password } : { email, password };
 
-    onLogin(userData);
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bodyData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Xatolik yuz berdi!");
+      }
+
+      // Backenddan kelgan real foydalanuvchi ma'lumotlarini qabul qilamiz
+      onLogin(data.user);
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -56,11 +75,11 @@ export default function Auth({ onLogin, setActiveTab }) {
           )}
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-300">Email yoki Login</label>
+            <label className="text-xs font-semibold text-slate-300">Email</label>
             <div className="relative">
               <Mail className="absolute left-3 top-3.5 w-4 h-4 text-slate-500" />
               <input 
-                type="text" 
+                type="email" 
                 value={email} 
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="student@gmail.com" 
@@ -85,8 +104,9 @@ export default function Auth({ onLogin, setActiveTab }) {
 
           <button 
             type="submit"
-            className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold py-3.5 rounded-xl shadow-lg shadow-cyan-500/20 transition-all">
-            {isRegister ? "Ro'yxatdan o'tish" : "Kirish"}
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold py-3.5 rounded-xl shadow-lg shadow-cyan-500/20 transition-all disabled:opacity-50">
+            {loading ? "Yuklanmoqda..." : (isRegister ? "Ro'yxatdan o'tish" : "Kirish")}
           </button>
         </form>
 
