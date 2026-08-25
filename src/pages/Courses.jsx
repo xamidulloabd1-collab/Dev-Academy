@@ -26,6 +26,7 @@ export default function Courses({ user, setUser, setActiveTab }) {
   const [selectedLesson, setSelectedLesson] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [paying, setPaying] = useState(false);
 
   // Darsni yakunlash va backendga yuborish
   const handleCompleteLesson = async () => {
@@ -105,14 +106,35 @@ export default function Courses({ user, setUser, setActiveTab }) {
     }
   };
 
-  const handleSubscribe = () => {
+  // Real to'lovni simulyatsiya qilish va backend orqali obunani yoqish
+  const handlePayment = async (provider) => {
     if (!user) {
       setActiveTab('auth');
       return;
     }
-    user.subscription = true;
-    setShowPaymentModal(false);
-    alert("Tabriklayman! 99,000 so'mlik obuna muvaffaqiyatli faollashtirildi!");
+
+    setPaying(true);
+    try {
+      const res = await fetch(`${API_URL}/subscribe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email })
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        setUser(data.user);
+        localStorage.setItem('dev_academy_user', JSON.stringify(data.user));
+        setShowPaymentModal(false);
+        alert(`To'lov ${provider === 'click' ? 'Click' : 'Payme'} orqali muvaffaqiyatli amalga oshirildi! Barcha pullik darslar ochildi 🚀`);
+      } else {
+        alert(data.error || "To'lovni tasdiqlashda xatolik");
+      }
+    } catch (err) {
+      alert("Server bilan aloqada xatolik!");
+    } finally {
+      setPaying(false);
+    }
   };
 
   return (
@@ -191,14 +213,16 @@ export default function Courses({ user, setUser, setActiveTab }) {
 
             <div className="space-y-3">
               <button 
-                onClick={handleSubscribe}
-                className="w-full bg-[#00AAFF] hover:bg-[#0092dd] text-slate-950 font-bold py-3.5 rounded-xl transition-all">
-                Click orqali to'lash[cite: 2]
+                onClick={() => handlePayment('click')}
+                disabled={paying}
+                className="w-full bg-[#00AAFF] hover:bg-[#0092dd] text-slate-950 font-bold py-3.5 rounded-xl transition-all disabled:opacity-50">
+                {paying ? "To'lov bajarilmoqda..." : "Click orqali to'lash[cite: 2]"}
               </button>
               <button 
-                onClick={handleSubscribe}
-                className="w-full bg-[#00E676] hover:bg-[#00c864] text-slate-950 font-bold py-3.5 rounded-xl transition-all">
-                Payme orqali to'lash[cite: 2]
+                onClick={() => handlePayment('payme')}
+                disabled={paying}
+                className="w-full bg-[#00E676] hover:bg-[#00c864] text-slate-950 font-bold py-3.5 rounded-xl transition-all disabled:opacity-50">
+                {paying ? "To'lov bajarilmoqda..." : "Payme orqali to'lash[cite: 2]"}
               </button>
             </div>
 
