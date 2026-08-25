@@ -9,13 +9,8 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
 
-// MongoDB-ga ulanish (Local yoki Atlas)
-// Agar MongoDB o'rnatilmagan bo'lsa, xotiradagi massivga saqlab turamiz
-let users = [
-  { id: "1", name: "Jasurbek M.", email: "jasur@mail.com", points: 890, completedLessons: 28, subscription: true },
-  { id: "2", name: "Madina Karimova", email: "madina@mail.com", points: 740, completedLessons: 24, subscription: true },
-  { id: "3", name: "Sardor Ahmedov", email: "sardor@mail.com", points: 680, completedLessons: 20, subscription: false },
-];
+// Bo'sh massiv — faqat real ro'yxatdan o'tgan o'quvchilar qo'shiladi
+let users = [];
 
 // Ro'yxatdan o'tish (Register)
 app.post('/api/register', (req, res) => {
@@ -32,7 +27,7 @@ app.post('/api/register', (req, res) => {
     password,
     subscription: false,
     completedLessons: 0,
-    points: 100, // Boshlang'ich bonus ball
+    points: 50, // Ro'yxatdan o'tgani uchun boshlang'ich ball
   };
 
   users.push(newUser);
@@ -51,29 +46,29 @@ app.post('/api/login', (req, res) => {
   res.json({ message: "Xush kelibsiz!", user });
 });
 
-// Barcha foydalanuvchilar va reyting statistikasini olish (Dashboard uchun)
+// Real reyting va statistika jadvalini olish
 app.get('/api/stats', (req, res) => {
-  // Ballar bo'yicha saralash (Reyting uchun)
+  // Ballar bo'yicha kamayish tartibida saralash (Reyting uchun)
   const sortedUsers = [...users].sort((a, b) => b.points - a.points);
   
   res.json({
-    totalStudents: users.length, // Jami ro'yxatdan o'tgan o'quvchilar soni
+    totalStudents: users.length, 
     leaderboard: sortedUsers
   });
 });
 
-// Darsni tugatganda ball va progressni yangilash
+// Darsni tugatganda ball va progressni real yangilash
 app.post('/api/complete-lesson', (req, res) => {
   const { email } = req.body;
   const user = users.find(u => u.email === email);
   if (user) {
     user.completedLessons = (user.completedLessons || 0) + 1;
-    user.points += 30; // Har bir dars uchun 30 ball
+    user.points += 30; // Har bir tugatilgan dars uchun 30 ball
     return res.json({ message: "Progress yangilandi!", user });
   }
   res.status(404).json({ error: "Foydalanuvchi topilmadi" });
 });
 
 app.listen(PORT, () => {
-  console.log(`Backend server ${PORT}-portda ishga tushdi va bazaga ulandi! 🚀`);
+  console.log(`Backend server ${PORT}-portda ishga tushdi! 🚀`);
 });
