@@ -44,7 +44,7 @@ export default function App() {
 
       <main className="flex-grow">
         {activeTab === 'landing' && <Landing setActiveTab={setActiveTab} />}
-        {activeTab === 'courses' && <Courses user={user} setActiveTab={setActiveTab} />}
+        {activeTab === 'courses' && <Courses user={user} setUser={setUser} setActiveTab={setActiveTab} />}
         {activeTab === 'auth' && <Auth onLogin={handleLogin} setActiveTab={setActiveTab} />}
         {activeTab === 'dashboard' && <Dashboard user={user} setUser={setUser} setActiveTab={setActiveTab} />}
       </main>

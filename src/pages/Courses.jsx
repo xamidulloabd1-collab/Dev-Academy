@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { PlayCircle, Lock, CheckCircle, CreditCard, Sparkles, ArrowLeft, BookOpen } from 'lucide-react';
 
+const API_URL = "https://backend-chi-six-43.vercel.app/api";
+
 // Darslar ro'yxati va ularning matnli kontenti
 const lessons = [
   { id: 1, title: "1-dars: Frontend olamiga kirish va Internet arxitekturasi", free: true, content: "# Frontend Kirish\nFrontend — bu foydalanuvchi veb-saytga kirganda ko'ziga ko'rinadigan va u bilan o'zaro aloqaga kirishadigan qismi. U HTML, CSS va JavaScript texnologiyalariga tayanadi[cite: 2]." },
@@ -20,9 +22,42 @@ const lessons = [
   { id: 15, title: "15-dars: React Hooks (useState, useEffect) va API so'rovlar", free: false, content: "# React Hooks\nKomponent ichidagi holatni boshqarish va tashqi serverdan ma'lumotlarni tortib kelish[cite: 2]." },
 ];
 
-export default function Courses({ user, setActiveTab, onCompleteLesson }) {
+export default function Courses({ user, setUser, setActiveTab }) {
   const [selectedLesson, setSelectedLesson] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Darsni yakunlash va backendga yuborish
+  const handleCompleteLesson = async () => {
+    if (!user) {
+      alert("Iltimos, oldin tizimga kiring!");
+      setActiveTab('auth');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/complete-lesson`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email })
+      });
+      const data = await res.json();
+      
+      if (res.ok) {
+        setUser(data.user);
+        localStorage.setItem('dev_academy_user', JSON.stringify(data.user));
+        alert("Tabriklayman! Dars yakunlandi va ballar qo'shildi 🎉");
+        setSelectedLesson(null);
+      } else {
+        alert(data.error || "Xatolik yuz berdi");
+      }
+    } catch (err) {
+      alert("Server bilan aloqada xatolik!");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Agar dars tanlangan bo'lsa, darsni o'qish oynasini ko'rsatamiz[cite: 3]
   if (selectedLesson) {
@@ -50,14 +85,11 @@ export default function Courses({ user, setActiveTab, onCompleteLesson }) {
           <div className="pt-6 border-t border-slate-800 flex justify-between items-center">
             <span className="text-xs text-slate-400">Darsni o'qib chiqdingizmi?</span>
             <button 
-              onClick={() => {
-                alert("Tabriklayman! Dars bajarildi deb belgilandi va ballar qo'shildi.");
-                if (onCompleteLesson) onCompleteLesson(selectedLesson.id);
-                setSelectedLesson(null);
-              }}
-              className="flex items-center space-x-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-bold px-6 py-3 rounded-xl shadow-lg transition-all">
+              onClick={handleCompleteLesson}
+              disabled={loading}
+              className="flex items-center space-x-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-bold px-6 py-3 rounded-xl shadow-lg transition-all disabled:opacity-50">
               <CheckCircle className="w-5 h-5" />
-              <span>Darsni yakunlash</span>
+              <span>{loading ? "Saqlanmoqda..." : "Darsni yakunlash"}</span>
             </button>
           </div>
         </div>
