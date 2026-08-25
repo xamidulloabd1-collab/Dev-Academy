@@ -106,7 +106,7 @@ export default function Courses({ user, setUser, setActiveTab }) {
     }
   };
 
-  // Real to'lovni simulyatsiya qilish va backend orqali obunani yoqish
+  // Real to'lovni backend orqali bajarish va obunani yoqish
   const handlePayment = async (provider) => {
     if (!user) {
       setActiveTab('auth');
