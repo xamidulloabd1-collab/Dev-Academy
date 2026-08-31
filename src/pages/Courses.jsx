@@ -3119,8 +3119,8 @@ class Hayvon {
   }
 
   ovoz() {
-    console.log('${this.nom} qandaydir ovoz chiqarmoqda.');
-  }
+  console.log(this.nom + ' qandaydir ovoz chiqarmoqda.');
+}
 }
 
 // Bola klass (Child class)
