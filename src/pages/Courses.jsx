@@ -2925,10 +2925,10 @@ tanishtir.call(xodim); // "Men Dasturchi".`,
     title: "62-dars: Call, Apply va Bind metodlari.", 
     free: false, 
     content: `JavaScript'da call, apply va bind metodlari funksiyaning kontekstini (this kalit so'zining qiymatini) boshqarish va o'zgartirish uchun ishlatiladi.1. call() metodicall funksiyani darhol chaqiradi va unga this qiymatini hamda argumentlarni alohida-alohida (vergul bilan) uzatadi.Sintaksis: funksiya.call(kontekst, arg1, arg2, ...)Misol:javascriptconst person = {
-  name: 'Anvar',
-  sayHello: function(age, city) {
-    console.log('Salom, mening otim ${age} yoshdaman, ${city}danman.');
-  }
+name: 'Anvar',
+sayHello: function(age, city) {
+    console.log('Salom, mening otim ${this.name}, ${age} yoshdaman, ${city}danman.');
+}
 };
 
 const otherPerson = { name: 'Malika' };
