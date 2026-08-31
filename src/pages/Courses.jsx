@@ -3891,7 +3891,7 @@ const salom = (ism) => 'Salom ' + ism;
 const yosh = 25;
 
 // "Ali 25 yoshda."
-const matn = '${ism} ${yosh} yoshda.'; 
+const main = 'Ali ' + yosh + ' yoshda.';
 4. Destructuring (Strukturani buzish)Massiv yoki obyektdagi maʼlumotlarni alohida oʻzgaruvchilarga juda tez ajratib olish usuli.javascript// Obyekt bilan
 const fovdalanuvchi = { ism: "Vali", yosh: 22 };
 const { ism, yosh } = fovdalanuvchi;
