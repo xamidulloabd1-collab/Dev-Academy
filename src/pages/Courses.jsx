@@ -4261,7 +4261,7 @@ export default App;
     const statusText = document.getElementById('formStatus');
 
     // Telegramga yuboriladigan matn formati (Chiroyli ko'rinishda)
-    const text = '🔔 **Yangi xabar!**\n\n👤 **Ism:** ${name}\n📞 **Tel:** ${phone}\n💬 **Xabar:** ${message}';
+    const text = '**Yangi xabar!**\n\n**Ism:** ' + name + '\n**Tel:** ' + phone + '\n💬 **Xabar:** ' + message;
 
     // Tugmani vaqtincha bloklash
     submitBtn.disabled = true;
