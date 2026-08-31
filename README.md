@@ -62,3 +62,4 @@ To'lov integratsiyasi (Click/Payme/Uzum Pay) — bu server tomonida (Node.js) am
 oshiriladigan webhook oqimi bo'lgani uchun frontendda faqat "Obuna bo'lish" tugmasi
 backend tomonidan qaytarilgan to'lov sahifasiga yo'naltiradi (`window.location.href = paymentUrl`).
 # Dev-Academy
+# Dev-AcademyY
