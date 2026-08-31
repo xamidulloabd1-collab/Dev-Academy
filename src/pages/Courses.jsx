@@ -3131,8 +3131,8 @@ class It extends Hayvon {
   }
 
   vovilla() {
-    console.log('${this.nom} vovillamoqda!');
-  }
+  console.log(this.nom + ' vovillamoqda!');
+}
 }
 
 const meningItim = new It("Reks", "Avcharka");
