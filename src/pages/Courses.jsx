@@ -3080,9 +3080,9 @@ ES6 (2015) versiyasida JavaScript-ga class tushunchasi kirib keldi. Ammo bu shun
   }
 
   // Metod (Klass ichidagi funksiya)
-  salomlash() {
-    console.log('Salom, mening ismim ${this.ism} va yoshim ${this.yosh}da.');
-  }
+salomlash() {
+  console.log('Salom, mening ismim ' + this.ism + ' va yoshim ' + this.yosh + 'da.');
+}
 }
 
 // Klassdan nusxa (obyekt) olish
