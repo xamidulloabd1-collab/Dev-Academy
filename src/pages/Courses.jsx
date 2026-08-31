@@ -3925,9 +3925,9 @@ async function malumotYuklash() {
     constructor(ism) {
         this.ism = ism;
     }
-    tanishuv() {
-        return 'Mening ismim ${this.ism}';
-    }
+    tandishuv() {
+  return 'Mening ismim ' + this.ism;
+}
 }
 
 const ali = new Shaxs("Ali");
