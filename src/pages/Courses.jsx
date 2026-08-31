@@ -3020,65 +3020,54 @@ console.log(uchgaKo'paytir(5)); // Chiqish: 15
       correct: 0
     }
   },
-  { 
-    id: 64, 
-    title: "64-dars: Prototypes va Prototypal Inheritance (Prototip merosxo'rligi).", 
-    free: false, 
-    content: `JavaScript-da Prototypes (Prototiplar) va Prototypal Inheritance (Prototipli merosxo'rlik) tillarning eng asosiy va muhim tushunchalaridan biridir. JavaScript ob'ektga yo'naltirilgan (OOP) til bo'lsa-da, u an'anaviy tillar (Java, C++) kabi klasslarga emas, prototiplarga asoslangan.1. Prototype nima?JavaScript-da deyarli barcha ob'ektlarning yashirin havolasi (reference) bo'ladi, bu havola [[Prototype]] deb nomlanadi. Prototip — bu shunchaki boshqa bir ob'ekt bo'lib, joriy ob'ekt undan xususiyat (property) va metodlarni nusxalab olmasdan, to'g'ridan-to'g'ri ishlatishi (meros olishi) mumkin.Kodda [[Prototype]] ni ko'rish yoki o'zgartirish uchun __proto__ xususiyatidan yoki zamonaviy Object.getPrototypeOf() metodidan foydalaniladi.javascriptconst hayvon = {
+  {
+    id: 64,
+    title: "64-dars: Prototypes va Prototypal Inheritance (Prototip merosxo'rligi).",
+    free: false,
+    content: `JavaScript-da Prototypes (Prototiplar) va Prototypal Inheritance (Prototipli merosxo'rlik) tillarning eng asosiy va muhim tushunchalaridan biridir. JavaScript ob'ektga yo'naltirilgan (OOP) til bo'lsa-da, u an'anaviy tillar (Java, C++) kabi klasslarga emas, prototiplarga asoslangan.
+
+1. Prototype nima?
+JavaScript-da deyarli barcha ob'ektlarning yashirin havolasi (reference) bo'ladi, bu havola [[Prototype]] deb nomlanadi. Prototip — bu shunchaki boshqa bir ob'ekt bo'lib, joriy ob'ekt undan xususiyat (property) va metodlarni nusxalab olmasdan, to'g'ridan-to'g'ri ishlatishi (meros olishi) mumkin.
+Kodda [[Prototype]] ni ko'rish yoki o'zgartirish uchun __proto__ xususiyatidan yoki zamonaviy Object.getPrototypeOf() metodidan foydalaniladi.
+Misol:
+const hayvon = {
   yeydi: true,
   yuradi() {
     console.log("Hayvon yurmoqda...");
   }
 };
-
 const quyon = {
   sakraydi: true,
-  __proto__: hayvon // quyon ob'ektining prototipi etib hayvon tayinlandi
+  __proto__: hayvon
 };
+console.log(quyon.sakraydi); // true
+console.log(quyon.yeydi);    // true
+quyon.yuradi();              // "Hayvon yurmoqda..."
 
-console.log(quyon.sakraydi); // true (o'ziniki)
-console.log(quyon.yeydi);     // true (prototipdan olindi)
-quyon.yuradi();               // "Hayvon yurmoqda..." (prototipdan chaqirildi)
-2. Prototypal Inheritance (Prototipli merosxo'rlik) nima?Qachonki biz ob'ektdan biror xususiyat yoki metodni qidirsak va u ob'ektning o'zida topilmasa, JavaScript avtomatik ravishda uni ob'ektning prototipidan qidirishni boshlaydi. Agar u yerda ham topilmasa, prototipning prototipiga o'tadi. Bu jarayon Prototype Chain (Prototiplar zanjiri) deyiladi.Zanjirning eng yuqori nuqtasida Object.prototype turadi va uning prototipi null ga teng (ya'ni zanjir shu yerda tugaydi).javascript// Prototype Chain misoli:
-// quyon -> hayvon -> Object.prototype -> null
+2. Prototypal Inheritance (Prototipli merosxo'rlik) nima?
+Qachonki biz ob'ektdan biror xususiyat yoki metodni qidirsak va u ob'ektning o'zida topilmasa, JavaScript avtomatik ravishda uni ob'ektning prototipidan qidirishni boshlaydi. Bu jarayon Prototype Chain (Prototiplar zanjiri) deyiladi.
+Zanjirning eng yuqori nuqtasida Object.prototype turadi va uning prototipi null ga teng.
 
-console.log(quyon.toString()); // [object Object] (Object.prototype ichidan topildi)
-3. F.prototype (Konstruktor funksiyalar prototipi)Yangi ob'ektlarni yaratish uchun konstruktor funksiyalardan foydalanganimizda, har bir funksiya avtomatik ravishda .prototype nomli xususiyatga ega bo'ladi. new kalit so'zi bilan yangi ob'ekt yaratilganda, o'sha ob'ektning [[Prototype]] xavolasi konstruktorning .prototype ob'ektiga bog'lanadi.javascriptfunction Shaxs(ism) {
+3. F.prototype (Konstruktor funksiyalar prototipi)
+Yangi ob'ektlarni yaratish uchun konstruktor funksiyalardan foydalanganimizda, har bir funksiya avtomatik ravishda .prototype nomli xususiyatga ega bo'ladi.
+Misol:
+function Shaxs(ism) {
   this.ism = ism;
 }
-
-// Shaxs prototipiga metod qo'shamiz
 Shaxs.prototype.salomlashish = function() {
-  console.log('Salom, mening ismim ${this.ism}');
+  console.log(\`Salom, mening ismim \${this.ism}\`);
 };
-
 const ali = new Shaxs("Ali");
 ali.salomlashish(); // "Salom, mening ismim Ali"
-Bu yerda ali.__proto__ === Shaxs.prototype tengligi o'rinli.4. Zamonaviy JavaScript: class kalit so'ziES6 (2015) versiyasida JavaScript-ga class tushunchasi kirib keldi. Ammo bu shunchaki "syntactic sugar" (shakarli sintaksis) hisoblanadi. Ya'ni, klasslar orqasida baribir o'sha eski prototiplar tizimi ishlaydi.javascriptclass Hayvon {
-  constructor(nom) {
-    this.nom = nom;
-  }
-  yuradi() {
-    console.log('${this.nom} yurmoqda.');
-  }
-}
 
-class Kuchuk extends Hayvon {
-  vovullaydi() {
-    console.log("Vov-vov!");
-  }
-}
-
-const reks = new Kuchuk("Reks");
-reks.yuradi();      // "Reks yurmoqda." (Meros olindi)
-reks.vovullaydi();  // "Vov-vov!"
-Xulosa va Asosiy Qoidalar:Xotira samaradorligi: Metodlarni har bir ob'ekt ichida qayta-qayta yaratmasdan, prototipga bitta qilib yozib qo'yish xotirani sezilarli darajada tejaydi.this kalit so'zi: Metod qayerdan (prototipdan) topilishidan qat'i nazar, this har doim nuqtadan chapda turgan ob'ektga (metodni chaqirgan ob'ektga) ishora qiladi.O'qish va Yozish: Prototiplardan faqat ma'lumot o'qiladi. Agar quyon.yeydi = false deb yozsak, bu prototipni o'zgartirmaydi, balki quyon ob'ektining o'zida yangi xususiyat yaratadi.`,
+4. Zamonaviy JavaScript: class kalit so'zi
+ES6 (2015) versiyasida JavaScript-ga class tushunchasi kirib keldi. Ammo bu shunchaki "syntactic sugar" (shakarli sintaksis) hisoblanadi. Ya'ni, klasslar orqasida baribir o'sha eski prototiplar tizimi ishlaydi.`,
     quiz: {
-      question: "JavaScript'da obyektlar orasida merosxo'rlik nima asosida qurilgan?",
-      options: ["Prototype chain (Prototip zanjiri)", "Classes only", "Java interfaces", "Global scope"],
-      correct: 0
+        question: "JavaScript'da obyektlar orasida merosxo'rlik nima asosida qurilgan?",
+        options: ["Prototype chain (Prototip zanjiri)", "Classes only", "Java interfaces", "Global scope"],
+        correct: 0
     }
-  },
+},
   { 
     id: 65, 
     title: "65-dars: ES6 Classes (Klasslar) va OOP tamoyillari.", 
