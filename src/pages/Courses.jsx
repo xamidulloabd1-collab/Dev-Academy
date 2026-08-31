@@ -3010,7 +3010,7 @@ console.log(uchgaKo'paytir(5)); // Chiqish: 15
 
 document.getElementById("myButton").addEventListener("click", function() {
     bosilishSoni++;
-    console.log('Tugma ${bosilishSoni} marta bosildi.');
+console.log('Tugma ' + bosilishSoni + ' marta bosildi.');
 });
 }
 ⚠️ Closure bilan ishlashda nimalarga e'tibor berish kerak?Xotira sarfi (Memory Leaks): Closure ichidagi o'zgaruvchilar xotiradan o'chirilmaydi (Garbage Collector ularga tegmaydi), chunki ichki funksiya ularga hali ham bog'langan bo'ladi. Agar keraksiz closure-lar juda ko'p bo'lsa, bu kompyuter xotirasini to'ldirib qo'yishi mumkin. Shuning uchun kerak bo'lmagan funksiyalarni null qilib qo'yish tavsiya etiladi..`,
@@ -3044,7 +3044,7 @@ console.log(quyon.sakraydi); // true
 console.log(quyon.yeydi);    // true
 quyon.yuradi();              // "Hayvon yurmoqda..."
 
-2. Prototypal Inheritance (Prototipli merosxo'rlik) nima?
+2. Prototypal Inheritance (Prototipli merosxorlik) nima?
 Qachonki biz ob'ektdan biror xususiyat yoki metodni qidirsak va u ob'ektning o'zida topilmasa, JavaScript avtomatik ravishda uni ob'ektning prototipidan qidirishni boshlaydi. Bu jarayon Prototype Chain (Prototiplar zanjiri) deyiladi.
 Zanjirning eng yuqori nuqtasida Object.prototype turadi va uning prototipi null ga teng.
 
