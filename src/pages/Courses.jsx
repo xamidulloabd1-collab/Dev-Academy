@@ -2920,41 +2920,47 @@ tanishtir.call(xodim); // "Men Dasturchi".`,
       correct: 0
     }
   },
-  { 
-    id: 62, 
-    title: "62-dars: Call, Apply va Bind metodlari.", 
-    free: false, 
-    content: `JavaScript'da call, apply va bind metodlari funksiyaning kontekstini (this kalit so'zining qiymatini) boshqarish va o'zgartirish uchun ishlatiladi.1. call() metodicall funksiyani darhol chaqiradi va unga this qiymatini hamda argumentlarni alohida-alohida (vergul bilan) uzatadi.Sintaksis: funksiya.call(kontekst, arg1, arg2, ...)Misol:javascriptconst person = {
-sayHello: function(age, city) {
-    console.log('Salom, mening otim ${this.name}, ${age} yoshdaman, ${city}danman.');
-}
+  {
+    id: 62,
+    title: "62-dars: Call, Apply va Bind metodlari.",
+    free: false,
+    content: `JavaScript'da call, apply va bind metodlari funksiyaning kontekstini (this kalit so'zining qiymatini) boshqarish va o'zgartirish uchun ishlatiladi.
+1. call() metodi: call() funksiyani darhol chaqiradi va unga this qiymatini hamda argumentlarni alohida-alohida (vergul bilan) uzatadi.
+Sintaksis: funksiya.call(kontekst, arg1, arg2, ...)
+Misol:
+const person = {
+  name: 'Anvar',
+  sayHello: function(age, city) {
+    console.log(\`Salom, mening otim \${this.name}, \${age} yoshdaman, \${city}danman.\`);
+  }
 };
-
 const otherPerson = { name: 'Malika' };
-
-// this ni otherPerson ga bog'lab, darhol chaqiramiz
 person.sayHello.call(otherPerson, 25, 'Toshkent');
-2. apply() metodiapply ham funksiyani darhol chaqiradi, lekin argumentlarni alohida emas, massiv ko'rinishida qabul qiladi.Sintaksis: funksiya.apply(kontekst, [arg1, arg2, ...])Misol:javascriptconst numbers = [5, 10, 15, 20];
 
-// Math.max metodi massivni to'g'ridan-to'g'ri qabul qilmaydi, apply yordamida beramiz
+2. apply() metodi: apply ham funksiyani darhol chaqiradi, lekin argumentlarni alohida emas, massiv ko'rinishida qabul qiladi.
+Sintaksis: funksiya.apply(kontekst, [arg1, arg2, ...])
+Misol:
+const numbers = [5, 10, 15, 20];
 const maxNumber = Math.max.apply(null, numbers); 
 console.log(maxNumber); // 20
-3. bind() metodibind funksiyani darhol chaqirmaydi. Buning o'rniga u this bog'langan yangi funksiya qaytaradi, uni keyinroq istalgancha chaqirish mumkin.Sintaksis: const yangiFunksiya = funksiya.bind(kontekst, arg1, arg2, ...)Misol:javascriptconst car = {
+
+3. bind() metodi: bind funksiyani darhol chaqirmaydi. Buning o'rniga u this bog'langan yangi funksiya qaytaradi, uni keyinroq istalgancha chaqirish mumkin.
+Sintaksis: const yangiFunksiya = funksiya.bind(kontekst, arg1, arg2, ...)
+Misol:
+const car = {
   brand: 'Tesla',
   getBrand: function() {
     console.log(this.brand);
   }
 };
-
 const showCarBrand = car.getBrand.bind(car);
-// Keyinroq chaqiramiz
-setTimeout(showCarBrand, 1000); // 1 sekunddan keyin 'Tesla' chiqadi.`,
+setTimeout(showCarBrand, 1000);`,
     quiz: {
-      question: "Funksiyani darhol ishlatmasdan, uning `this` kontekstini bog'lab yangi funksiya qaytaruvchi metod qaysi?",
-      options: ["bind()", "call()", "apply()", "push()"],
-      correct: 0
+        question: "Funksiyani darhol ishlatmasdan, uning `this` kontekstini bog'lab yangi funksiya qaytaruvchi metod qaysi?",
+        options: ["bind()", "call()", "apply()", "push()"],
+        correct: 0
     }
-  },
+},
   { 
     id: 63, 
     title: "63-dars: Closure (Yopilish) tushunchasi va amaliy qo'llanilishi.", 
