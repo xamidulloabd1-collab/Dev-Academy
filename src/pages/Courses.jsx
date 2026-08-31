@@ -3886,7 +3886,7 @@ function salom(ism) {
 }
 
 // ES6+ usuli
-const salom = (ism) => 'Salom ${this.ism}';
+const salom = (ism) => 'Salom ' + ism;
 3. Template Literals (Shablonli satrlar)+ belgisisiz matnlarni va oʻzgaruvchilarni oson birlashtirish hamda koʻp qatorli matnlar yozish imkoniyati. Bosh qiyshiq tirnoq (backtick - '\) ishlatiladi.javascriptconst ism = "Ali";
 const yosh = 25;
 
