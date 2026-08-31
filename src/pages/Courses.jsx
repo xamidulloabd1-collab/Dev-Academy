@@ -4055,7 +4055,7 @@ root.render(
     </ThemeProvider>
   </React.StrictMode>
 );
-3. O'zingizni tekshirish uchun topshiriqlar (Mustaqil rivojlantirish)Bilimingizni yanada mustahkamlash uchun ushbu loyihaga quyidagi funksiyalarni qo'shib ko'ring:useState mashqi: Har bir vazifaning yoniga "Bajarildi" (Checkbox) tugmasini qo'ying. Bosilganda vazifa matni ustiga chizilsin (text-decoration: line-through).useEffect mashqi: Sahifa nomini (brauzer tabidagi yozuvni) bajarilmagan vazifalar soniga qarab o'zgartiring. Masalan: Document.title = "Sizda ${count} ta vazifa bor".useContext mashqi: ThemeContext ichiga foydalanuvchi tilini (UZ / EN) o'zgartiruvchi yangi holat (state) qo'shing va tugmalar matnini tilga moslang.`,
+3. O'zingizni tekshirish uchun topshiriqlar (Mustaqil rivojlantirish)Bilimingizni yanada mustahkamlash uchun ushbu loyihaga quyidagi funksiyalarni qo'shib ko'ring:useState mashqi: Har bir vazifaning yoniga "Bajarildi" (Checkbox) tugmasini qo'ying. Bosilganda vazifa matni ustiga chizilsin (text-decoration: line-through).useEffect mashqi: Sahifa nomini (brauzer tabidagi yozuvni) bajarilmagan vazifalar soniga qarab o'zgartiring. Masalan: document.title = 'Sizda ' + count + ' ta vazifa bor'.useContext mashqi: ThemeContext ichiga foydalanuvchi tilini (UZ / EN) o'zgartiruvchi yangi holat (state) qo'shing va tugmalar matnini tilga moslang.`,
     quiz: {
       question: "React'da yon effektlarni (side-effects) boshqarish uchun qaysi hook ishlatiladi?",
       options: ["useEffect", "useState", "useRef", "useMemo"],
