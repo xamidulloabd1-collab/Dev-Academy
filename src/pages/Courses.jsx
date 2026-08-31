@@ -3007,11 +3007,11 @@ console.log(ikkigaKo'paytir(5)); // Chiqish: 10
 console.log(uchgaKo'paytir(5)); // Chiqish: 15
 3. State (Holat) saqlash (Masalan, React-da)React kutubxonasidagi useState huki aynan closure arxitekturasiga asoslangan. U komponent qayta chizilganda (re-render) ham eski qiymatlarni saqlab qolish uchun closure-dan foydalanadi.4. Event Listener va Asinxron kodlarVeb-brayzerlarda hodisalarni tinglash (event listeners) yoki setTimeout ishlatganda context (muhit)ni yo'qotib qo'ymaslik uchun closure juda muhim.javascriptfunction tugmaniSozla(tugmaNomi) {
     let bosilishSoni = 0;
-    
-    document.getElementById("myButton").addEventListener("click", function() {
-        bosilishSoni++;
-        console.log('Tugma ${bosilishSoni} marta bosildi.');
-    });
+
+document.getElementById("myButton").addEventListener("click", function() {
+    bosilishSoni++;
+    console.log('Tugma ${bosilishSoni} marta bosildi.');
+});
 }
 ⚠️ Closure bilan ishlashda nimalarga e'tibor berish kerak?Xotira sarfi (Memory Leaks): Closure ichidagi o'zgaruvchilar xotiradan o'chirilmaydi (Garbage Collector ularga tegmaydi), chunki ichki funksiya ularga hali ham bog'langan bo'ladi. Agar keraksiz closure-lar juda ko'p bo'lsa, bu kompyuter xotirasini to'ldirib qo'yishi mumkin. Shuning uchun kerak bo'lmagan funksiyalarni null qilib qo'yish tavsiya etiladi..`,
     quiz: {
