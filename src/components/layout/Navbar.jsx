@@ -17,7 +17,7 @@ export default function Navbar({ activeTab, setActiveTab, user, onLogout, mobile
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-8 text-sm font-medium">
+        <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
           <button 
             onClick={() => setActiveTab('landing')} 
             className={`transition-colors hover:text-cyan-400 ${activeTab === 'landing' ? 'text-cyan-400 font-bold' : 'text-slate-400'}`}>
@@ -27,6 +27,15 @@ export default function Navbar({ activeTab, setActiveTab, user, onLogout, mobile
             onClick={() => setActiveTab('courses')} 
             className={`transition-colors hover:text-cyan-400 ${activeTab === 'courses' ? 'text-cyan-400 font-bold' : 'text-slate-400'}`}>
             Kurslar
+          </button>
+          <button 
+            onClick={() => setActiveTab('leaderboard')}
+            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+              activeTab === 'leaderboard' 
+                ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' 
+                : 'text-slate-400 hover:text-slate-200'
+            }`}>
+            Reyting 🏆
           </button>
           {user && (
             <button 
@@ -78,6 +87,11 @@ export default function Navbar({ activeTab, setActiveTab, user, onLogout, mobile
             onClick={() => { setActiveTab('courses'); setMobileMenuOpen(false); }} 
             className="block text-slate-300 hover:text-cyan-400 font-medium py-1">
             Kurslar
+          </button>
+          <button 
+            onClick={() => { setActiveTab('leaderboard'); setMobileMenuOpen(false); }} 
+            className={`block font-medium py-1 ${activeTab === 'leaderboard' ? 'text-cyan-400 font-bold' : 'text-slate-300 hover:text-cyan-400'}`}>
+            Reyting 🏆
           </button>
           {user ? (
             <>
