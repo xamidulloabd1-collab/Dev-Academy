@@ -4011,7 +4011,7 @@ function App() {
   };
 
   return (
-    <div className={'app-container ${theme}'}>
+<div className="app-container light">
       <header>
         <h1>Mening Vazifalarim</h1>
         <button onClick={toggleTheme}>
