@@ -4345,7 +4345,7 @@ sitemap.xml: Saytingizdagi barcha faol sahifalar ro'yxati (Next.js yoki maxsus p
   }
 ];
 
-export default function Courses({ user, setUser, setActiveTab }) {
+export default function Courses({ user, setUser, setActiveTab, lessons }) {
   const [selectedLesson, setSelectedLesson] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -4353,6 +4353,24 @@ export default function Courses({ user, setUser, setActiveTab }) {
   
   const [selectedOption, setSelectedOption] = useState(null);
   const [quizError, setQuizError] = useState("");
+
+  // Har bir dars uchun ochiq/yopiqligini hisoblab chiqamiz
+  const enrichedLessons = lessons.map((lesson, index) => {
+    const isCompleted = user?.completedLessons?.includes(lesson.id) || false;
+    
+    // 1-shart: Birinchi dars ochiq yoki oldingi dars bajarilgan bo'lishi shart
+    const isSequentialUnlocked = index === 0 || (lessons[index - 1] && (user?.completedLessons?.includes(lessons[index - 1].id)));
+    
+    // 2-shart: 10-darsgacha obuna talab qilinmaydi. 11-darsdan (index >= 10) boshlab obuna shart bo'ladi
+    const requiresSubscription = index >= 10 && !lesson.free;
+    const isSubscriptionAllowed = !requiresSubscription || (user && user.subscription);
+
+    return {
+      ...lesson,
+      completed: isCompleted,
+      isUnlocked: isSequentialUnlocked && isSubscriptionAllowed
+    };
+  });
 
   const handleCompleteLesson = async () => {
     if (!user) {
@@ -4378,7 +4396,7 @@ export default function Courses({ user, setUser, setActiveTab }) {
       const res = await fetch(`${API_URL}/complete-lesson`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email })
+        body: JSON.stringify({ email: user.email, lessonId: selectedLesson.id })
       });
       const data = await res.json();
       
@@ -4395,6 +4413,52 @@ export default function Courses({ user, setUser, setActiveTab }) {
       alert("Server bilan aloqada xatolik!");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleLessonClick = (lesson, index) => {
+    const isSequentialUnlocked = index === 0 || (lessons[index - 1] && (user?.completedLessons?.includes(lessons[index - 1].id)));
+    const requiresSubscription = index >= 10 && !lesson.free;
+    const isSubscriptionAllowed = !requiresSubscription || (user && user.subscription);
+
+    if (isSequentialUnlocked && isSubscriptionAllowed) {
+      setSelectedLesson(lesson);
+      setSelectedOption(null);
+      setQuizError("");
+    } else if (!isSubscriptionAllowed) {
+      setShowPaymentModal(true);
+    } else {
+      alert("🔒 Oldingi darsni yakunlab, testdan o'tishingiz kerak!");
+    }
+  };
+
+  const handlePayment = async (provider) => {
+    if (!user) {
+      setActiveTab('auth');
+      return;
+    }
+
+    setPaying(true);
+    try {
+      const res = await fetch(`${API_URL}/subscribe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email })
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        setUser(data.user);
+        localStorage.setItem('dev_academy_user', JSON.stringify(data.user));
+        setShowPaymentModal(false);
+        alert(`To'lov ${provider === 'click' ? 'Click' : 'Payme'} orqali muvaffaqiyatli amalga oshirildi! Barcha pullik darslar ochildi 🚀`);
+      } else {
+        alert(data.error || "To'lovni tasdiqlashda xatolik");
+      }
+    } catch (err) {
+      alert("Server bilan aloqada xatolik!");
+    } finally {
+      setPaying(false);
     }
   };
 
@@ -4465,46 +4529,6 @@ export default function Courses({ user, setUser, setActiveTab }) {
     );
   }
 
-  const handleLessonClick = (lesson) => {
-    if (lesson.free || (user && user.subscription)) {
-      setSelectedLesson(lesson);
-      setSelectedOption(null);
-      setQuizError("");
-    } else {
-      setShowPaymentModal(true);
-    }
-  };
-
-  const handlePayment = async (provider) => {
-    if (!user) {
-      setActiveTab('auth');
-      return;
-    }
-
-    setPaying(true);
-    try {
-      const res = await fetch(`${API_URL}/subscribe`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email })
-      });
-      const data = await res.json();
-
-      if (res.ok) {
-        setUser(data.user);
-        localStorage.setItem('dev_academy_user', JSON.stringify(data.user));
-        setShowPaymentModal(false);
-        alert(`To'lov ${provider === 'click' ? 'Click' : 'Payme'} orqali muvaffaqiyatli amalga oshirildi! Barcha pullik darslar ochildi 🚀`);
-      } else {
-        alert(data.error || "To'lovni tasdiqlashda xatolik");
-      }
-    } catch (err) {
-      alert("Server bilan aloqada xatolik!");
-    } finally {
-      setPaying(false);
-    }
-  };
-
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -4523,48 +4547,45 @@ export default function Courses({ user, setUser, setActiveTab }) {
       </div>
 
       <div className="grid gap-4">
-        {lessons.map((lesson) => {
-          const isAccessible = lesson.free || (user && user.subscription);
-          return (
-            <div 
-              key={lesson.id}
-              onClick={() => handleLessonClick(lesson)}
-              className={`p-5 rounded-2xl border flex items-center justify-between transition-all cursor-pointer ${
-                isAccessible 
-                  ? 'bg-slate-900/80 border-slate-800 hover:border-cyan-500/50' 
-                  : 'bg-slate-900/40 border-slate-900/60 opacity-80'
-              }`}
-            >
-              <div className="flex items-center space-x-4">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${
-                  isAccessible ? 'bg-cyan-500/10 text-cyan-400' : 'bg-slate-800 text-slate-500'
-                }`}>
-                  {lesson.id}
-                </div>
-                <div>
-                  <h4 className="font-semibold text-slate-200">{lesson.title}</h4>
-                  <span className="text-xs text-slate-500">
-                    {lesson.free ? 'Bepul dars + Test' : 'Pullik obuna talab etiladi'}
-                  </span>
-                </div>
+        {enrichedLessons.map((lesson, index) => (
+          <div 
+            key={lesson.id}
+            onClick={() => handleLessonClick(lesson, index)}
+            className={`p-5 rounded-2xl border flex items-center justify-between transition-all cursor-pointer ${
+              lesson.isUnlocked 
+                ? 'bg-slate-900/80 border-slate-800 hover:border-cyan-500/50' 
+                : 'bg-slate-900/40 border-slate-900/60 opacity-80'
+            }`}
+          >
+            <div className="flex items-center space-x-4">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${
+                lesson.isUnlocked ? 'bg-cyan-500/10 text-cyan-400' : 'bg-slate-800 text-slate-500'
+              }`}>
+                {lesson.id}
               </div>
-
               <div>
-                {isAccessible ? (
-                  <div className="flex items-center space-x-2 text-cyan-400 text-xs font-bold bg-cyan-500/10 px-4 py-2 rounded-xl">
-                    <PlayCircle className="w-4 h-4" />
-                    <span>O'qish</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center space-x-2 text-rose-400 text-xs font-semibold bg-rose-500/10 px-3 py-2 rounded-xl">
-                    <Lock className="w-4 h-4" />
-                    <span>Qulflangan</span>
-                  </div>
-                )}
+                <h4 className="font-semibold text-slate-200">{lesson.title}</h4>
+                <span className="text-xs text-slate-500">
+                  {lesson.completed ? '✅ Yakunlangan' : index < 10 ? 'Bepul dars + Test' : 'PRO obuna talab etiladi'}
+                </span>
               </div>
             </div>
-          );
-        })}
+
+            <div>
+              {lesson.isUnlocked ? (
+                <div className="flex items-center space-x-2 text-cyan-400 text-xs font-bold bg-cyan-500/10 px-4 py-2 rounded-xl">
+                  <PlayCircle className="w-4 h-4" />
+                  <span>{lesson.completed ? "Takrorlash" : "O'qish"}</span>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2 text-rose-400 text-xs font-semibold bg-rose-500/10 px-3 py-2 rounded-xl">
+                  <Lock className="w-4 h-4" />
+                  <span>{index >= 10 && !user?.subscription ? "PRO obuna kerak" : "Oldingi darsni yakunlang"}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
 
       {showPaymentModal && (

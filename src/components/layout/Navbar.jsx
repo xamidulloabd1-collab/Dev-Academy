@@ -1,5 +1,5 @@
 import React from 'react';
-import { Terminal, User, Menu, X } from 'lucide-react';
+import { User, Menu, X } from 'lucide-react';
 
 export default function Navbar({ activeTab, setActiveTab, user, onLogout, mobileMenuOpen, setMobileMenuOpen }) {
   return (
@@ -7,13 +7,12 @@ export default function Navbar({ activeTab, setActiveTab, user, onLogout, mobile
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         
         {/* LOGO */}
-        <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setActiveTab('landing')}>
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/30">
-            <Terminal className="w-6 h-6 text-slate-950" />
-          </div>
-          <span className="text-xl font-extrabold tracking-wider bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-            DEV-ACADEMY
-          </span>
+        <div onClick={() => setActiveTab('landing')} className="flex items-center space-x-3 cursor-pointer group">
+          <img 
+            src="/logo.png" 
+            alt="DevAcademy Logo" 
+            className="h-10 w-auto object-contain group-hover:scale-105 transition-transform" 
+          />
         </div>
 
         {/* Desktop Navigation */}
