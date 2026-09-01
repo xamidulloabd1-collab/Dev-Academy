@@ -1,5 +1,6 @@
 import React from 'react';
 import { User, Menu, X } from 'lucide-react';
+import logoImg from '../../logo.png'; // Agar logo.png to'g'ridan-to'g'ri src ichida bo'lsa: './logo.png' yoki '../../logo.png'
 
 export default function Navbar({ activeTab, setActiveTab, user, onLogout, mobileMenuOpen, setMobileMenuOpen }) {
   return (
@@ -9,7 +10,7 @@ export default function Navbar({ activeTab, setActiveTab, user, onLogout, mobile
         {/* LOGO */}
         <div onClick={() => setActiveTab('landing')} className="flex items-center space-x-3 cursor-pointer group">
           <img 
-            src="/logo.png" 
+            src={logoImg} 
             alt="DevAcademy Logo" 
             className="h-10 w-auto object-contain group-hover:scale-105 transition-transform" 
           />
