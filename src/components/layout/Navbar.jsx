@@ -1,6 +1,6 @@
 import React from 'react';
 import { User, Menu, X } from 'lucide-react';
-import logoImg from '../../logo.png'; // Agar logo.png to'g'ridan-to'g'ri src ichida bo'lsa: './logo.png' yoki '../../logo.png'
+import logoImg from '../../logo.png'; // Agar Navbar src/components/layout/ da bo'lsa, logo.png ga qarab yo'lni moslang
 
 export default function Navbar({ activeTab, setActiveTab, user, onLogout, mobileMenuOpen, setMobileMenuOpen }) {
   return (
@@ -15,6 +15,8 @@ export default function Navbar({ activeTab, setActiveTab, user, onLogout, mobile
             className="h-10 w-auto object-contain group-hover:scale-105 transition-transform" 
           />
         </div>
+
+        {/* Qolgan kodlar o'zgarishsiz qoladi... */}
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
