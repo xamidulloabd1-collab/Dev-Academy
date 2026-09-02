@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Terminal, Lock, Mail, User } from 'lucide-react';
 
-// Vercel'dagi backend manzili
 const API_URL = "https://backend-chi-six-43.vercel.app/api";
 
 export default function Auth({ onLogin, setActiveTab }) {
