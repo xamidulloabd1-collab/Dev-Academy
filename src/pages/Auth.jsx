@@ -11,7 +11,7 @@ export default function Auth({ onLogin, setActiveTab }) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password || (isRegister && !name)) {
       alert("Iltimos, barcha maydonlarni to'ldiring!");
@@ -36,6 +36,11 @@ export default function Auth({ onLogin, setActiveTab }) {
       if (!response.ok) {
         throw new Error(data.error || "Xatolik yuz berdi!");
       }
+
+      // ─── SHU QATORLAR QO'SHILDI / YANGILANDI ───
+      localStorage.setItem('dev_academy_user', JSON.stringify(data.user));
+      localStorage.setItem('dev_academy_token', data.token);
+      // ------------------------------------------
 
       // Backenddan kelgan real foydalanuvchi ma'lumotlarini qabul qilamiz
       onLogin(data.user);

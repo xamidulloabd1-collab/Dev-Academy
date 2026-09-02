@@ -3,8 +3,8 @@ import { PlayCircle, Lock, CheckCircle, CreditCard, Sparkles, ArrowLeft, BookOpe
 
 const API_URL = "https://backend-chi-six-43.vercel.app/api";
 
-// 100 kunlik roadmap bo'yicha Day 1 - Day 30 darslari
-const lessons = [
+// 100 kunlik roadmap bo'yicha barcha darslar (agar tashqaridan lessons prop berilmasa, shu ro'yxat ishlatiladi)
+const defaultLessons = [
   { 
     id: 1, 
     title: "1-dars: HTML tili. Teglar. Web-hujjat strukturasi. HEAD qism teglari.", 
@@ -4344,26 +4344,23 @@ sitemap.xml: Saytingizdagi barcha faol sahifalar ro'yxati (Next.js yoki maxsus p
     }
   }
 ];
-
-export default function Courses({ user, setUser, setActiveTab, lessons }) {
+export default function Courses({ user, setUser, setActiveTab, lessons = defaultLessons }) {
   const [selectedLesson, setSelectedLesson] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [paying, setPaying] = useState(false);
-  
   const [selectedOption, setSelectedOption] = useState(null);
   const [quizError, setQuizError] = useState("");
 
-  // Har bir dars uchun ochiq/yopiqligini hisoblab chiqamiz
-  const enrichedLessons = lessons.map((lesson, index) => {
-    const isCompleted = user?.completedLessons?.includes(lesson.id) || false;
-    
-    // 1-shart: Birinchi dars ochiq yoki oldingi dars bajarilgan bo'lishi shart
-    const isSequentialUnlocked = index === 0 || (lessons[index - 1] && (user?.completedLessons?.includes(lessons[index - 1].id)));
-    
-    // 2-shart: 10-darsgacha obuna talab qilinmaydi. 11-darsdan (index >= 10) boshlab obuna shart bo'ladi
+  const safeLessons = lessons || [];
+  // Backend ba'zida completedLessons'ni massiv shaklida qaytarmasligi mumkin (masalan undefined yoki obyekt),
+  // shu sababli har doim xavfsiz massivga aylantirib olamiz.
+  const completedLessons = Array.isArray(user?.completedLessons) ? user.completedLessons : [];
+  const enrichedLessons = safeLessons.map((lesson, index) => {
+    const isCompleted = completedLessons.includes(lesson.id);
+    const isSequentialUnlocked = index === 0 || (lessons?.[index - 1] && completedLessons.includes(lessons[index - 1].id));
     const requiresSubscription = index >= 10 && !lesson.free;
-    const isSubscriptionAllowed = !requiresSubscription || (user && user.subscription);
+    const isSubscriptionAllowed = requiresSubscription ? (user && user.subscription) : true;
 
     return {
       ...lesson,
@@ -4372,9 +4369,32 @@ export default function Courses({ user, setUser, setActiveTab, lessons }) {
     };
   });
 
+  const handleLessonClick = (lesson, index) => {
+    const isSequentialUnlocked = index === 0 || (lessons[index - 1] && completedLessons.includes(lessons[index - 1].id));
+    const requiresSubscription = index >= 10 && !lesson.free;
+    const isSubscriptionAllowed = !requiresSubscription || (user && user.subscription);
+
+    if (isSequentialUnlocked && isSubscriptionAllowed) {
+      setSelectedLesson(lesson);
+      setSelectedOption(null);
+      setQuizError("");
+    } else if (!isSubscriptionAllowed) {
+      setShowPaymentModal(true);
+    } else {
+      alert("🔒 Oldingi darsni yakunlab, testdan o'tishingiz kerak!");
+    }
+  };
+
   const handleCompleteLesson = async () => {
     if (!user) {
       alert("Iltimos, oldin tizimga kiring!");
+      setActiveTab('auth');
+      return;
+    }
+
+    const token = localStorage.getItem('dev_academy_token');
+    if (!token) {
+      alert("Sessiyangiz muddati tugagan. Iltimos, qaytadan tizimga kiring!");
       setActiveTab('auth');
       return;
     }
@@ -4395,8 +4415,11 @@ export default function Courses({ user, setUser, setActiveTab, lessons }) {
     try {
       const res = await fetch(`${API_URL}/complete-lesson`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email, lessonId: selectedLesson.id })
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ lessonId: selectedLesson.id })
       });
       const data = await res.json();
       
@@ -4406,6 +4429,9 @@ export default function Courses({ user, setUser, setActiveTab, lessons }) {
         alert("To'g'ri javob! Tabriklayman, dars yakunlandi va ballar qo'shildi 🎉");
         setSelectedLesson(null);
         setSelectedOption(null);
+      } else if (res.status === 401) {
+        alert("Sessiyangiz muddati tugagan. Iltimos, qaytadan tizimga kiring!");
+        setActiveTab('auth');
       } else {
         alert(data.error || "Xatolik yuz berdi");
       }
@@ -4416,24 +4442,15 @@ export default function Courses({ user, setUser, setActiveTab, lessons }) {
     }
   };
 
-  const handleLessonClick = (lesson, index) => {
-    const isSequentialUnlocked = index === 0 || (lessons[index - 1] && (user?.completedLessons?.includes(lessons[index - 1].id)));
-    const requiresSubscription = index >= 10 && !lesson.free;
-    const isSubscriptionAllowed = !requiresSubscription || (user && user.subscription);
-
-    if (isSequentialUnlocked && isSubscriptionAllowed) {
-      setSelectedLesson(lesson);
-      setSelectedOption(null);
-      setQuizError("");
-    } else if (!isSubscriptionAllowed) {
-      setShowPaymentModal(true);
-    } else {
-      alert("🔒 Oldingi darsni yakunlab, testdan o'tishingiz kerak!");
-    }
-  };
-
   const handlePayment = async (provider) => {
     if (!user) {
+      setActiveTab('auth');
+      return;
+    }
+
+    const token = localStorage.getItem('dev_academy_token');
+    if (!token) {
+      alert("Sessiyangiz muddati tugagan. Iltimos, qaytadan tizimga kiring!");
       setActiveTab('auth');
       return;
     }
@@ -4442,8 +4459,11 @@ export default function Courses({ user, setUser, setActiveTab, lessons }) {
     try {
       const res = await fetch(`${API_URL}/subscribe`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email })
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ provider })
       });
       const data = await res.json();
 
@@ -4451,7 +4471,10 @@ export default function Courses({ user, setUser, setActiveTab, lessons }) {
         setUser(data.user);
         localStorage.setItem('dev_academy_user', JSON.stringify(data.user));
         setShowPaymentModal(false);
-        alert(`To'lov ${provider === 'click' ? 'Click' : 'Payme'} orqali muvaffaqiyatli amalga oshirildi! Barcha pullik darslar ochildi 🚀`);
+        alert(`To'lov ${provider === 'click' ? 'Click' : 'Payme'} orqali muvaffaqiyatli amalga oshirildi!`);
+      } else if (res.status === 401) {
+        alert("Sessiyangiz muddati tugagan. Iltimos, qaytadan tizimga kiring!");
+        setActiveTab('auth');
       } else {
         alert(data.error || "To'lovni tasdiqlashda xatolik");
       }
@@ -4462,161 +4485,143 @@ export default function Courses({ user, setUser, setActiveTab, lessons }) {
     }
   };
 
-  if (selectedLesson) {
-    return (
-      <div className="max-w-4xl mx-auto px-4 py-10 space-y-8">
-        <button 
-          onClick={() => { setSelectedLesson(null); setSelectedOption(null); setQuizError(""); }}
-          className="flex items-center space-x-2 text-slate-400 hover:text-cyan-400 transition-colors text-sm font-semibold">
-          <ArrowLeft className="w-4 h-4" />
-          <span>Darslar ro'yxatiga qaytish</span>
-        </button>
-
-        <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl space-y-6 shadow-2xl">
-          <div className="flex items-center space-x-3 text-cyan-400">
-            <BookOpen className="w-6 h-6" />
-            <span className="text-xs font-bold uppercase tracking-wider">100 Kunlik Frontend Roadmap</span>
-          </div>
-
-          <h1 className="text-3xl font-black text-slate-100">{selectedLesson.title}</h1>
-
-          <div className="prose prose-invert max-w-none text-slate-300 leading-relaxed space-y-4 whitespace-pre-line bg-slate-950/60 p-6 rounded-2xl border border-slate-800/80">
-            {selectedLesson.content}
-          </div>
-
-          {selectedLesson.quiz && (
-            <div className="bg-slate-950/80 border border-slate-800 p-6 rounded-2xl space-y-4">
-              <div className="flex items-center space-x-2 text-amber-400">
-                <HelpCircle className="w-5 h-5" />
-                <h3 className="font-bold text-base">Darsni yakunlash uchun mini-test:</h3>
-              </div>
-              <p className="text-slate-200 font-medium text-sm">{selectedLesson.quiz.question}</p>
-              
-              <div className="grid gap-2 pt-2">
-                {selectedLesson.quiz.options.map((option, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => { setSelectedOption(idx); setQuizError(""); }}
-                    className={`w-full text-left px-4 py-3 rounded-xl border text-sm font-medium transition-all ${
-                      selectedOption === idx 
-                        ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300' 
-                        : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'
-                    }`}
-                  >
-                    {idx + 1}. {option}
-                  </button>
-                ))}
-              </div>
-
-              {quizError && (
-                <p className="text-rose-400 text-xs font-semibold pt-1">{quizError}</p>
-              )}
-            </div>
-          )}
-
-          <div className="pt-6 border-t border-slate-800 flex justify-between items-center">
-            <span className="text-xs text-slate-400">Testni bajarib darsni yakunlang</span>
-            <button 
-              onClick={handleCompleteLesson}
-              disabled={loading}
-              className="flex items-center space-x-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-bold px-6 py-3 rounded-xl shadow-lg transition-all disabled:opacity-50">
-              <CheckCircle className="w-5 h-5" />
-              <span>{loading ? "Tekshirilmoqda..." : "Darsni yakunlash"}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h2 className="text-3xl font-black">Learn Front-End in 100 Days (Day 1-30)</h2>
-          <p className="text-slate-400 text-sm mt-1">Har bir dars yakunida mini-testdan o'tib bilimlaringizni mustahkamlang.</p>
-        </div>
-        {user && !user.subscription && (
+    <div className="max-w-7xl mx-auto px-4 py-10 space-y-6">
+      {selectedLesson ? (
+        <div className="max-w-4xl mx-auto space-y-8">
           <button 
-            onClick={() => setShowPaymentModal(true)}
-            className="bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-bold px-6 py-3 rounded-xl shadow-lg shadow-amber-500/20 text-sm flex items-center space-x-2">
-            <Sparkles className="w-4 h-4" />
-            <span>PRO Obunani olish (99,000 so'm/oy)</span>
+            onClick={() => { setSelectedLesson(null); setSelectedOption(null); setQuizError(""); }}
+            className="flex items-center space-x-2 text-slate-400 hover:text-cyan-400 transition-colors text-sm font-semibold">
+            <ArrowLeft className="w-4 h-4" />
+            <span>Darslar ro'yxatiga qaytish</span>
           </button>
-        )}
-      </div>
 
-      <div className="grid gap-4">
-        {enrichedLessons.map((lesson, index) => (
-          <div 
-            key={lesson.id}
-            onClick={() => handleLessonClick(lesson, index)}
-            className={`p-5 rounded-2xl border flex items-center justify-between transition-all cursor-pointer ${
-              lesson.isUnlocked 
-                ? 'bg-slate-900/80 border-slate-800 hover:border-cyan-500/50' 
-                : 'bg-slate-900/40 border-slate-900/60 opacity-80'
-            }`}
-          >
-            <div className="flex items-center space-x-4">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${
-                lesson.isUnlocked ? 'bg-cyan-500/10 text-cyan-400' : 'bg-slate-800 text-slate-500'
-              }`}>
-                {lesson.id}
-              </div>
-              <div>
-                <h4 className="font-semibold text-slate-200">{lesson.title}</h4>
-                <span className="text-xs text-slate-500">
-                  {lesson.completed ? '✅ Yakunlangan' : index < 10 ? 'Bepul dars + Test' : 'PRO obuna talab etiladi'}
-                </span>
-              </div>
+          <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl space-y-6 shadow-2xl">
+            <div className="flex items-center space-x-3 text-cyan-400">
+              <BookOpen className="w-6 h-6" />
+              <span className="text-xs font-bold uppercase tracking-wider">100 Kunlik Frontend Roadmap</span>
             </div>
 
-            <div>
-              {lesson.isUnlocked ? (
-                <div className="flex items-center space-x-2 text-cyan-400 text-xs font-bold bg-cyan-500/10 px-4 py-2 rounded-xl">
-                  <PlayCircle className="w-4 h-4" />
-                  <span>{lesson.completed ? "Takrorlash" : "O'qish"}</span>
+            <h1 className="text-3xl font-black text-slate-100">{selectedLesson.title}</h1>
+
+            <div className="prose prose-invert max-w-none text-slate-300 leading-relaxed space-y-4 whitespace-pre-line bg-slate-950/60 p-6 rounded-2xl border border-slate-800/80">
+              {selectedLesson.content}
+            </div>
+
+            {selectedLesson.quiz && (
+              <div className="bg-slate-950/80 border border-slate-800 p-6 rounded-2xl space-y-4">
+                <div className="flex items-center space-x-2 text-amber-400">
+                  <HelpCircle className="w-5 h-5" />
+                  <h3 className="font-bold text-base">Darsni yakunlash uchun mini-test:</h3>
                 </div>
-              ) : (
-                <div className="flex items-center space-x-2 text-rose-400 text-xs font-semibold bg-rose-500/10 px-3 py-2 rounded-xl">
-                  <Lock className="w-4 h-4" />
-                  <span>{index >= 10 && !user?.subscription ? "PRO obuna kerak" : "Oldingi darsni yakunlang"}</span>
+                <p className="text-slate-200 font-medium text-sm">{selectedLesson.quiz.question}</p>
+                
+                <div className="grid gap-2 pt-2">
+                  {selectedLesson.quiz.options.map((option, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => { setSelectedOption(idx); setQuizError(""); }}
+                      className={`w-full text-left px-4 py-3 rounded-xl border text-sm font-medium transition-all ${
+                        selectedOption === idx 
+                          ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300' 
+                          : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'
+                      }`}
+                    >
+                      {idx + 1}. {option}
+                    </button>
+                  ))}
                 </div>
-              )}
+
+                {quizError && (
+                  <p className="text-rose-400 text-xs font-semibold pt-1">{quizError}</p>
+                )}
+              </div>
+            )}
+
+            <div className="pt-6 border-t border-slate-800 flex justify-between items-center">
+              <span className="text-xs text-slate-400">Testni bajarib darsni yakunlang</span>
+              <button 
+                onClick={handleCompleteLesson}
+                disabled={loading}
+                className="flex items-center space-x-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-bold px-6 py-3 rounded-xl shadow-lg transition-all disabled:opacity-50">
+                <CheckCircle className="w-5 h-5" />
+                <span>{loading ? "Tekshirilmoqda..." : "Darsni yakunlash"}</span>
+              </button>
             </div>
           </div>
-        ))}
-      </div>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          <div className="text-center max-w-2xl mx-auto space-y-3">
+            <h1 className="text-3xl font-extrabold text-white">Learn Front-End in 100 Days</h1>
+            <p className="text-slate-400 text-sm">Har bir dars yakunida mini-testdan o'tib bilimlaringizni mustahkamlang.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+            {enrichedLessons.map((lesson, index) => (
+              <div 
+                key={lesson.id || index} 
+                onClick={() => handleLessonClick(lesson, index)}
+                className={`bg-slate-900 border p-6 rounded-2xl cursor-pointer transition-all hover:scale-[1.02] flex flex-col justify-between ${
+                  lesson.completed 
+                    ? 'border-emerald-500/40 bg-emerald-950/10' 
+                    : lesson.isUnlocked 
+                    ? 'border-slate-800 hover:border-cyan-500/50' 
+                    : 'border-slate-800/50 opacity-75'
+                }`}
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-cyan-400 uppercase">Dars {index + 1}</span>
+                    {lesson.completed ? (
+                      <span className="flex items-center text-xs text-emerald-400 font-semibold gap-1">
+                        <CheckCircle className="w-4 h-4" /> Bajarilgan
+                      </span>
+                    ) : lesson.isUnlocked ? (
+                      <PlayCircle className="w-5 h-5 text-cyan-400" />
+                    ) : (
+                      <Lock className="w-4 h-4 text-slate-500" />
+                    )}
+                  </div>
+                  <h3 className="text-white font-bold text-lg">{lesson.title}</h3>
+                  <p className="text-slate-400 text-xs line-clamp-2">{lesson.content}</p>
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between text-xs">
+                  <span className={lesson.isUnlocked ? "text-cyan-400 font-semibold" : "text-slate-500"}>
+                    {lesson.isUnlocked ? "O'qishni boshlash →" : "Qulflangan"}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {showPaymentModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-md w-full space-y-6 shadow-2xl relative">
-            <div className="text-center space-y-2">
-              <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center mx-auto text-cyan-400">
-                <CreditCard className="w-6 h-6" />
-              </div>
-              <h3 className="text-2xl font-black">99,000 so'm / oy</h3>
-              <p className="text-xs text-slate-400">Click yoki Payme orqali tezkor to'lov</p>
-            </div>
-
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-6 shadow-2xl">
+            <h3 className="text-xl font-bold text-white text-center">PRO Obunani olish</h3>
+            <p className="text-slate-400 text-sm text-center">
+              10-darsdan keyingi barcha pullik darslarni ochish uchun obuna bo'ling (99,000 so'm/oy).
+            </p>
             <div className="space-y-3">
               <button 
                 onClick={() => handlePayment('click')}
                 disabled={paying}
-                className="w-full bg-[#00AAFF] hover:bg-[#0092dd] text-slate-950 font-bold py-3.5 rounded-xl transition-all disabled:opacity-50">
-                {paying ? "To'lov bajarilmoqda..." : "Click orqali to'lash"}
+                className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold py-3 rounded-xl transition-all">
+                Click orqali to'lash
               </button>
               <button 
                 onClick={() => handlePayment('payme')}
                 disabled={paying}
-                className="w-full bg-[#00E676] hover:bg-[#00c864] text-slate-950 font-bold py-3.5 rounded-xl transition-all disabled:opacity-50">
-                {paying ? "To'lov bajarilmoqda..." : "Payme orqali to'lash"}
+                className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-all">
+                Payme orqali to'lash
               </button>
             </div>
-
             <button 
               onClick={() => setShowPaymentModal(false)}
-              className="w-full text-xs text-slate-500 hover:text-slate-300 pt-2 text-center block">
+              className="w-full text-slate-400 hover:text-white text-xs font-medium pt-2">
               Bekor qilish
             </button>
           </div>
@@ -4625,3 +4630,5 @@ export default function Courses({ user, setUser, setActiveTab, lessons }) {
     </div>
   );
 }
+
+export { defaultLessons };
