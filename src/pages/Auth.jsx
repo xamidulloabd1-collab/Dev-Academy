@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Terminal, Lock, Mail, User } from 'lucide-react';
 
-const API_URL = "https://backend-chi-six-43.vercel.app/api";
+const API_URL = "/api";
 
 export default function Auth({ onLogin, setActiveTab }) {
   const [isRegister, setIsRegister] = useState(true);
