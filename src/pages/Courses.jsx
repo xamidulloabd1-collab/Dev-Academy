@@ -4346,9 +4346,7 @@ sitemap.xml: Saytingizdagi barcha faol sahifalar ro'yxati (Next.js yoki maxsus p
 ];
 export default function Courses({ user, setUser, setActiveTab, lessons = defaultLessons }) {
   const [selectedLesson, setSelectedLesson] = useState(null);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [paying, setPaying] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
   const [quizError, setQuizError] = useState("");
 
@@ -4359,27 +4357,21 @@ export default function Courses({ user, setUser, setActiveTab, lessons = default
   const enrichedLessons = safeLessons.map((lesson, index) => {
     const isCompleted = completedLessons.includes(lesson.id);
     const isSequentialUnlocked = index === 0 || (lessons?.[index - 1] && completedLessons.includes(lessons[index - 1].id));
-    const requiresSubscription = index >= 10 && !lesson.free;
-    const isSubscriptionAllowed = requiresSubscription ? (user && user.subscription) : true;
 
     return {
       ...lesson,
       completed: isCompleted,
-      isUnlocked: isSequentialUnlocked && isSubscriptionAllowed
+      isUnlocked: isSequentialUnlocked
     };
   });
 
   const handleLessonClick = (lesson, index) => {
     const isSequentialUnlocked = index === 0 || (lessons[index - 1] && completedLessons.includes(lessons[index - 1].id));
-    const requiresSubscription = index >= 10 && !lesson.free;
-    const isSubscriptionAllowed = !requiresSubscription || (user && user.subscription);
 
-    if (isSequentialUnlocked && isSubscriptionAllowed) {
+    if (isSequentialUnlocked) {
       setSelectedLesson(lesson);
       setSelectedOption(null);
       setQuizError("");
-    } else if (!isSubscriptionAllowed) {
-      setShowPaymentModal(true);
     } else {
       alert("🔒 Oldingi darsni yakunlab, testdan o'tishingiz kerak!");
     }
@@ -4439,49 +4431,6 @@ export default function Courses({ user, setUser, setActiveTab, lessons = default
       alert("Server bilan aloqada xatolik!");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handlePayment = async (provider) => {
-    if (!user) {
-      setActiveTab('auth');
-      return;
-    }
-
-    const token = localStorage.getItem('dev_academy_token');
-    if (!token) {
-      alert("Sessiyangiz muddati tugagan. Iltimos, qaytadan tizimga kiring!");
-      setActiveTab('auth');
-      return;
-    }
-
-    setPaying(true);
-    try {
-      const res = await fetch(`${API_URL}/subscribe`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ provider })
-      });
-      const data = await res.json();
-
-      if (res.ok) {
-        setUser(data.user);
-        localStorage.setItem('dev_academy_user', JSON.stringify(data.user));
-        setShowPaymentModal(false);
-        alert(`To'lov ${provider === 'click' ? 'Click' : 'Payme'} orqali muvaffaqiyatli amalga oshirildi!`);
-      } else if (res.status === 401) {
-        alert("Sessiyangiz muddati tugagan. Iltimos, qaytadan tizimga kiring!");
-        setActiveTab('auth');
-      } else {
-        alert(data.error || "To'lovni tasdiqlashda xatolik");
-      }
-    } catch (err) {
-      alert("Server bilan aloqada xatolik!");
-    } finally {
-      setPaying(false);
     }
   };
 
@@ -4594,36 +4543,6 @@ export default function Courses({ user, setUser, setActiveTab, lessons = default
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-      )}
-
-      {showPaymentModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-6 shadow-2xl">
-            <h3 className="text-xl font-bold text-white text-center">PRO Obunani olish</h3>
-            <p className="text-slate-400 text-sm text-center">
-              10-darsdan keyingi barcha pullik darslarni ochish uchun obuna bo'ling (99,000 so'm/oy).
-            </p>
-            <div className="space-y-3">
-              <button 
-                onClick={() => handlePayment('click')}
-                disabled={paying}
-                className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold py-3 rounded-xl transition-all">
-                Click orqali to'lash
-              </button>
-              <button 
-                onClick={() => handlePayment('payme')}
-                disabled={paying}
-                className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-all">
-                Payme orqali to'lash
-              </button>
-            </div>
-            <button 
-              onClick={() => setShowPaymentModal(false)}
-              className="w-full text-slate-400 hover:text-white text-xs font-medium pt-2">
-              Bekor qilish
-            </button>
           </div>
         </div>
       )}

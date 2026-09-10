@@ -16,24 +16,43 @@ const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET;
 const MONGODB_URI = process.env.MONGODB_URI;
 
-if (!JWT_SECRET) {
-  console.error("❌ JWT_SECRET .env faylida topilmadi! Serverni to'xtatyapman.");
-  process.exit(1);
-}
-if (!MONGODB_URI) {
-  console.error("❌ MONGODB_URI .env faylida topilmadi! Serverni to'xtatyapman.");
-  process.exit(1);
+// --- MongoDB ulanishini keshlash (Vercel serverless uchun MUHIM) ---
+// Vercel har bir so'rovni alohida funksiya chaqiruvi sifatida ishga tushirishi mumkin.
+// Agar har safar yangi mongoose.connect() chaqirilsa, ulanishlar soni tezda tugab,
+// "too many connections" xatosiga olib keladi. Shuning uchun ulanishni global
+// o'zgaruvchida keshlab, funksiya "issiq" (qayta ishlatilgan) bo'lsa qayta ulanmaymiz.
+let cached = global._mongooseCache;
+if (!cached) {
+  cached = global._mongooseCache = { conn: null, promise: null };
 }
 
-mongoose
-  .connect(MONGODB_URI)
-  .then(() => console.log("✅ MongoDB'ga muvaffaqiyatli ulandi"))
-  .catch((err) => {
+async function connectDB() {
+  if (cached.conn) return cached.conn;
+  if (!MONGODB_URI) {
+    throw new Error("MONGODB_URI environment o'zgaruvchisi topilmadi. Vercel loyihasining Settings > Environment Variables bo'limini tekshiring.");
+  }
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(MONGODB_URI).then((m) => m);
+  }
+  cached.conn = await cached.promise;
+  return cached.conn;
+}
+
+// Har bir /api so'rovidan oldin bazaga ulanganimizga ishonch hosil qilamiz
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
     console.error("❌ MongoDB'ga ulanishda xatolik:", err.message);
-    process.exit(1);
-  });
+    res.status(500).json({ error: "Ma'lumotlar bazasiga ulanib bo'lmadi. Server sozlamalarini tekshiring." });
+  }
+});
 
 function signToken(user) {
+  if (!JWT_SECRET) {
+    throw new Error("JWT_SECRET environment o'zgaruvchisi topilmadi. Vercel loyihasining Settings > Environment Variables bo'limini tekshiring.");
+  }
   return jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: '30d' });
 }
 
@@ -63,7 +82,6 @@ app.post('/api/register', async (req, res) => {
       name,
       email: email.toLowerCase(),
       password: hashedPassword,
-      subscription: false,
       completedLessons: [],
       points: 50, // Ro'yxatdan o'tgani uchun boshlang'ich ball
     });
@@ -76,7 +94,7 @@ app.post('/api/register', async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Server xatosi. Keyinroq qayta urinib ko'ring." });
+    res.status(500).json({ error: err.message || "Server xatosi. Keyinroq qayta urinib ko'ring." });
   }
 });
 
@@ -102,7 +120,7 @@ app.post('/api/login', async (req, res) => {
     res.json({ message: "Xush kelibsiz!", user: toPublicUser(user), token });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Server xatosi. Keyinroq qayta urinib ko'ring." });
+    res.status(500).json({ error: err.message || "Server xatosi. Keyinroq qayta urinib ko'ring." });
   }
 });
 
@@ -153,24 +171,13 @@ app.post('/api/complete-lesson', auth, async (req, res) => {
   }
 });
 
-// To'lov qilinganda obunani faollashtirish (himoyalangan — token talab qilinadi)
-app.post('/api/subscribe', auth, async (req, res) => {
-  try {
-    const user = await User.findById(req.userId);
-    if (!user) {
-      return res.status(404).json({ error: "Foydalanuvchi topilmadi" });
-    }
+// Lokal kompyuterda "node server.js" bilan ishga tushirilganda oddiy serverdek ishlaydi.
+// Vercel'da esa bu fayl serverless funksiya sifatida chaqiriladi, shuning uchun
+// app.listen() Vercel muhitida ishlamaydi (va kerak ham emas) — shu sabab uni shart qildik.
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Backend server ${PORT}-portda ishga tushdi! 🚀`);
+  });
+}
 
-    user.subscription = true;
-    await user.save();
-
-    res.json({ message: "Obuna muvaffaqiyatli faollashtirildi!", user: toPublicUser(user) });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Server xatosi. Keyinroq qayta urinib ko'ring." });
-  }
-});
-
-app.listen(PORT, () => {
-  console.log(`Backend server ${PORT}-portda ishga tushdi! 🚀`);
-});
+module.exports = app;
