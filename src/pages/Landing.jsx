@@ -13,7 +13,7 @@ export default function Landing() {
       {/* HERO */}
       <section className="mx-auto flex max-w-7xl flex-col items-center gap-14 px-6 pb-20 pt-16 md:pt-24 lg:flex-row lg:items-center">
         <div className="flex-1 text-center lg:text-left">
-          <Badge tone="free">10 ta dars — bepul</Badge>
+          <Badge tone="free">Barcha darslar — bepul</Badge>
           <h1 className="mt-6 font-display text-4xl font-extrabold leading-tight text-ink-primary md:text-5xl lg:text-6xl">
             0 dan <span className="text-cyan-glow">mukammal</span>
             <br /> frontend dasturchigacha
@@ -31,7 +31,7 @@ export default function Landing() {
             </Button>
           </div>
           <p className="mt-4 font-mono text-xs text-ink-faint">
-            Karta talab qilinmaydi · 1–10-darslar to'liq ochiq
+            Karta talab qilinmaydi · Barcha darslar to'liq ochiq
           </p>
         </div>
 
@@ -82,51 +82,6 @@ export default function Landing() {
             <p className="mt-2 font-body text-sm text-ink-muted">
               4-bosqichda ishlaydigan loyihalar bilan intervyuga tayyor bo'ling.
             </p>
-          </GlassCard>
-        </div>
-      </section>
-
-      {/* PRICING */}
-      <section id="narxlar" className="mx-auto max-w-4xl px-6 py-20">
-        <div className="mb-10 text-center">
-          <span className="font-mono text-xs uppercase tracking-widest text-cyan-glow">
-            Narxlar
-          </span>
-          <h2 className="mt-3 font-display text-3xl font-bold text-ink-primary">
-            Oddiy, shaffof narx
-          </h2>
-        </div>
-        <div className="grid gap-6 md:grid-cols-2">
-          <GlassCard className="flex flex-col">
-            <Badge tone="free">Bepul</Badge>
-            <p className="mt-4 font-display text-3xl font-extrabold text-ink-primary">
-              0 so'm
-            </p>
-            <p className="font-body text-sm text-ink-muted">1–10-darslar</p>
-            <ul className="mt-6 flex-1 space-y-2 font-body text-sm text-ink-muted">
-              <li>✓ HTML/CSS asoslari</li>
-              <li>✓ Progress treker</li>
-              <li>✓ Boshlang'ich topshiriqlar</li>
-            </ul>
-            <Button as={Link} to="/royxatdan-otish" variant="ghost" className="mt-6">
-              Bepul boshlash
-            </Button>
-          </GlassCard>
-          <GlassCard glow="cyan" className="flex flex-col border-cyan-glow/30">
-            <Badge tone="pro">Pro obuna</Badge>
-            <p className="mt-4 font-display text-3xl font-extrabold text-ink-primary">
-              99 000 so'm<span className="text-base font-normal text-ink-muted">/oy</span>
-            </p>
-            <p className="font-body text-sm text-ink-muted">11-darsdan — barcha bosqichlar</p>
-            <ul className="mt-6 flex-1 space-y-2 font-body text-sm text-ink-muted">
-              <li>✓ Professional, Expert, Amaliyot bosqichlari</li>
-              <li>✓ Real loyihalar va portfolio</li>
-              <li>✓ Reyting jadvalida ishtirok</li>
-              <li>✓ Click / Payme / Uzum Pay orqali to'lov</li>
-            </ul>
-            <Button as={Link} to="/royxatdan-otish" variant="primary" className="mt-6">
-              Obuna bo'lish
-            </Button>
           </GlassCard>
         </div>
       </section>

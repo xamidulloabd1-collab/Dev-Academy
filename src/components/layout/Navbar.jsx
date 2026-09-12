@@ -11,7 +11,7 @@ export default function Navbar({ activeTab, setActiveTab, user, onLogout, mobile
         <div onClick={() => setActiveTab('landing')} className="flex items-center space-x-3 cursor-pointer group">
           <img 
             src={logoImg} 
-            alt="DevAcademy Logo" 
+            alt="CodeNest Logo" 
             className="h-10 w-auto object-contain group-hover:scale-105 transition-transform" 
           />
         </div>
